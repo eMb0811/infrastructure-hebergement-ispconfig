@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport TP3 - Hébergement Web, DNS BIND9, Sauvegardes et Messagerie sous ISPConfig 3</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+            @bottom-right {
+                content: "Page " counter(page);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "TP3 Administration Réseaux — ISPConfig 3 & BIND9";
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+                color: #64748b;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            font-size: 10.5pt;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Couverture --- */
+        .cover-page {
+            page-break-after: always;
+            height: 92vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 6px solid #2563eb;
+            padding-left: 30px;
+        }
+
+        .cover-header {
+            margin-top: 40px;
+        }
+
+        .cover-institution {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .cover-module {
+            font-size: 11pt;
+            color: #2563eb;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .cover-title-container {
+            margin-top: 60px;
+        }
+
+        .cover-title {
+            font-size: 26pt;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.25;
+            margin-bottom: 15px;
+        }
+
+        .cover-subtitle {
+            font-size: 13pt;
+            color: #475569;
+            line-height: 1.5;
+            max-width: 600px;
+        }
+
+        .cover-badges {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 9pt;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+        }
+
+        .cover-meta {
+            margin-bottom: 40px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 25px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 8px;
+            font-size: 10pt;
+        }
+
+        .meta-label {
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .meta-value {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        /* --- Mise en page générale --- */
+        h1 {
+            font-size: 18pt;
+            color: #0f172a;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 6px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+
+        .chapter-break {
+            page-break-before: always;
+        }
+
+        h2 {
+            font-size: 13.5pt;
+            color: #1e3a8a;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 11pt;
+            color: #334155;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-top: 5px;
+            margin-bottom: 12px;
+            padding-left: 22px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* --- Blocs d'alertes & Théorie --- */
+        .theory-box {
+            background-color: #f8fafc;
+            border-left: 4px solid #0284c7;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin: 14px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            page-break-inside: avoid;
+        }
+
+        .theory-title {
+            font-weight: 700;
+            color: #0369a1;
+            margin-bottom: 6px;
+            font-size: 10pt;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .oral-tip-box {
+            background-color: #fefce8;
+            border-left: 4px solid #eab308;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin: 14px 0;
+            page-break-inside: avoid;
+        }
+
+        .oral-tip-title {
+            font-weight: 700;
+            color: #854d0e;
+            margin-bottom: 6px;
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Blocs de code & Commandes --- */
+        pre {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8.8pt;
+            overflow-x: auto;
+            line-height: 1.45;
+            margin: 10px 0 14px 0;
+            page-break-inside: avoid;
+            border: 1px solid #334155;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 9pt;
+            border: 1px solid #e2e8f0;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            border: none;
+        }
+
+        /* --- Tableaux élégants --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 18px 0;
+            font-size: 9.2pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-weight: 700;
+            border-top: 1px solid #cbd5e1;
+            border-bottom: 2px solid #94a3b8;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #fbfcfe;
+        }
+
+        /* --- Schémas ASCII / Diagrammes --- */
+        .diagram-container {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 14px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 8.2pt;
+            line-height: 1.35;
+            color: #0f172a;
+            white-space: pre;
+            page-break-inside: avoid;
+        }
+
+        .toc-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dotted #cbd5e1;
+            padding-bottom: 2px;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .toc-page {
+            color: #64748b;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========================================================================= -->
+<!-- COUVERTURE                                                                -->
+<!-- ========================================================================= -->
+<div class="cover-page">
+    <div class="cover-header">
+        <div class="cover-institution">Université Cheikh Anta Diop de Dakar (UCAD)</div>
+        <div class="cover-module">Master / Licence Télécoms & Réseaux — Administration Système & Services Réseau</div>
+    </div>
+
+    <div class="cover-title-container">
+        <div class="cover-title">Rapport de Travaux Pratiques : Infrastructure d'Hébergement Web, DNS BIND9, Sauvegardes & Messagerie</div>
+        <div class="cover-subtitle">Mise en œuvre d'un environnement d'hébergement multidomaine haute performance avec ISPConfig 3, BIND9, Nginx, PHP-FPM, Redis Cache et Postfix/Dovecot.</div>
+        
+        <div class="cover-badges">
+            <span class="badge">ISPConfig 3.2</span>
+            <span class="badge">BIND 9.18</span>
+            <span class="badge">Stack LEMP</span>
+            <span class="badge">Redis Cache</span>
+            <span class="badge">Ubuntu 22.04 LTS</span>
+        </div>
+    </div>
+
+    <div class="cover-meta">
+        <div class="meta-grid">
+            <div class="meta-label">Étudiant :</div>
+            <div class="meta-value">Elhadji (elhadji.sn)</div>
+
+            <div class="meta-label">Matière :</div>
+            <div class="meta-value">Administration de serveurs, DNS, hébergement web et messagerie (TP3)</div>
+
+            <div class="meta-label">Superviseur :</div>
+            <div class="meta-value">Enseignant responsable du module Réseaux & Systèmes</div>
+
+            <div class="meta-label">Adresse IP VM :</div>
+            <div class="meta-value">192.168.126.110 (NAT fixe) / 192.168.1.10 (Bridge classe)</div>
+
+            <div class="meta-label">Domaines gérés :</div>
+            <div class="meta-value"><code>elhadji.sn</code> & <code>universite.sn</code></div>
+
+            <div class="meta-label">Date :</div>
+            <div class="meta-value">Novembre 2026</div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- TABLE DES MATIÈRES                                                        -->
+<!-- ========================================================================= -->
+<h1>Table des Matières</h1>
+<ul class="toc-list" style="margin-top: 25px;">
+    <li><span class="toc-title">I. Introduction & Cahier des Charges du TP</span></li>
+    <li><span class="toc-title">II. Fondements Théoriques de l'Hébergement Web & des Protocoles</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.1 Le Modèle Client-Serveur Web & le protocole HTTP/HTTPS (SNI)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.2 Le Système de Noms de Domaine (DNS) & BIND9</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.3 Le Mécanisme des Hôtes Virtuels (Virtual Hosting)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.4 L'Exécution Dynamique : Nginx vs PHP-FPM</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.5 La Persistance (MariaDB) et le Cache d'Objets en RAM (Redis)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.6 L'Architecture de Messagerie Électronique (MTA, MDA, SMTP, IMAP)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;2.7 Théorie des Sauvegardes : RPO, RTO et Rétention</span></li>
+    <li><span class="toc-title">III. Architecture Système & Conception Réseau</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;3.1 Pourquoi le choix d'ISPConfig 3 ?</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;3.2 Topologie Réseau Hybride (Double Interface : NAT fixe + Bridge)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;3.3 Automatisation du déploiement via Cloud-Init & Seed ISO</span></li>
+    <li><span class="toc-title">IV. Mise en Œuvre Pratique & Déploiement Étape par Étape</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.1 Déploiement automatique du socle ISPConfig 3 (Stack LEMP)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.2 Configuration et vérification des zones DNS BIND9</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.3 Déclaration Multidomaine & Utilisateurs isolés</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.4 Déploiement optimisé de WordPress avec Redis Object Cache</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.5 Planification des Sauvegardes Quotidiennes (7 copies)</span></li>
+    <li><span class="toc-title">&nbsp;&nbsp;&nbsp;&nbsp;4.6 Messagerie Multidomaine & Script d'Interconnexion en Classe</span></li>
+    <li><span class="toc-title">V. Guide de Soutenance Orale & Réponses aux Questions de l'Enseignant</span></li>
+    <li><span class="toc-title">VI. Conclusion & Synthèse des Compétences Acquises</span></li>
+</ul>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE I                                                                -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>I. Introduction & Cahier des Charges du TP</h1>
+
+<p>Dans le cadre des travaux pratiques d'administration système et réseaux, l'objectif fondamental est de transformer un serveur Linux vierge en une <strong>plateforme d'hébergement mutualisée complète, sécurisée et performante</strong>. Contrairement à une utilisation grand public d'outils clé-en-main, cette démarche requiert la compréhension intime de chaque couche logicielle du système d'exploitation et des protocoles réseau associés.</p>
+
+<p>Le cahier des charges défini par l'enseignant impose la réalisation et la maîtrise des axes suivants :</p>
+<ol>
+    <li><strong>Gestion Multidomaine :</strong> Configurer au moins deux domaines distincts (<code>elhadji.sn</code> et <code>universite.sn</code>) et créer un utilisateur système isolé pour chacun d'eux afin de garantir l'étanchéité des privilèges.</li>
+    <li><strong>Infrastructure DNS :</strong> Mettre en œuvre le serveur DNS de référence <strong>BIND9 (Berkeley Internet Name Domain)</strong>, déclarer les zones autoritaires pour chaque domaine, renseigner les enregistrements nécessaires (A, NS, MX) et faire pointer le résolveur DNS du poste client Windows vers le serveur.</li>
+    <li><strong>Hébergement Web & Performance :</strong> Déployer des sites WordPress fonctionnels, servis via le serveur web <strong>Nginx</strong> et le gestionnaire de processus <strong>PHP-FPM</strong>, couplés à un mécanisme d'accélération en mémoire vive (<strong>Redis Object Cache</strong>).</li>
+    <li><strong>Stratégie de Sauvegardes Automatiques :</strong> Mettre en place un plan de sauvegarde automatisé planifié (fréquence quotidienne) avec une politique de rétention explicite (conservation des 7 dernières copies).</li>
+    <li><strong>Messagerie Électronique & Interconnexion :</strong> Configurer la messagerie multidomaine (SMTP avec <strong>Postfix</strong>, IMAP avec <strong>Dovecot</strong>, Webmail <strong>Roundcube</strong>), tester la communication interne, et valider l'interconnexion SMTP directe avec la machine virtuelle d'un camarade de classe.</li>
+</ol>
+
+<div class="oral-tip-box">
+    <div class="oral-tip-title">Objectif de l'évaluation orale</div>
+    L'enseignant ne se contente pas de constater qu'un site s'affiche : il évalue la capacité de l'administrateur à expliquer <strong>comment</strong> le paquet IP circule, <strong>pourquoi</strong> tel fichier de configuration a été renseigné, et <strong>quels mécanismes Linux</strong> interviennent à chaque étape. Ce rapport détaille rigoureusement la théorie avant d'aborder la pratique.
+</div>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE II                                                               -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>II. Fondements Théoriques de l'Hébergement Web & des Protocoles</h1>
+
+<p>Pour administrer un serveur d'hébergement sans boîte noire, il est indispensable de maîtriser les concepts théoriques sous-jacents qui relient le navigateur client aux démons Linux.</p>
+
+<h2>2.1 Le Modèle Client-Serveur Web & le protocole HTTP/HTTPS (SNI)</h2>
+<p>Le protocole <strong>HTTP (HyperText Transfer Protocol)</strong> fonctionne sur une architecture requête/réponse de la couche Application (modèle OSI). Lorsque l'utilisateur sollicite une URL :</p>
+<ol>
+    <li>Le client ouvre une session <strong>TCP</strong> sur le port <code>80</code> (ou port <code>443</code> avec négociation TLS/SSL).</li>
+    <li>Le client envoie une requête HTTP contenant un verbe (<code>GET / HTTP/1.1</code>) et des en-têtes (headers), dont le plus important pour l'hébergement mutualisé : l'en-tête <code>Host: elhadji.sn</code>.</li>
+</ol>
+
+<div class="theory-box">
+    <div class="theory-title">Le rôle critique du SNI (Server Name Indication) en HTTPS</div>
+    En HTTP classique, le serveur web lit l'en-tête <code>Host:</code> dans le texte de la requête pour savoir quel site servir. Mais en HTTPS, la connexion est chiffrée <em>avant</em> l'envoi de la requête HTTP ! Comment le serveur sait-il quel certificat SSL présenter si plusieurs domaines partagent la même IP ?<br>
+    C'est l'extension TLS <strong>SNI (Server Name Indication)</strong> qui résout ce problème : dès le paquet <em>TLS ClientHello</em>, le client transmet en clair le nom de domaine demandé. Le serveur web Nginx peut ainsi sélectionner le bon certificat TLS avant d'établir le tunnel chiffré.
+</div>
+
+<h2>2.2 Le Système de Noms de Domaine (DNS) & BIND9</h2>
+<p>Le <strong>DNS (Domain Name System)</strong> est une base de données distribuée et hiérarchique qui assure la résolution entre noms mnémoniques (FQDN) et adresses IP numériques (enregistrements de type A / AAAA).</p>
+
+<div class="diagram-container">
+                                [ Racine "." ]
+                                       |
+                     +-----------------+-----------------+
+                     |                                   |
+                  TLD "sn"                            TLD "fr"
+                     |
+         +-----------+-----------+
+         |                       |
+     elhadji.sn             universite.sn (Zones faisant autorité sur notre serveur BIND9)
+         |
+  +------+------+
+  |      |      |
+ www    mail   webmail (Enregistrements A pointant vers 192.168.126.110)
+</div>
+
+<p>Dans notre infrastructure, le démon <strong>BIND9 (nommé <code>named</code>)</strong> joue le rôle de serveur <strong>faisant autorité</strong> (Authoritative DNS Server) pour les zones <code>elhadji.sn</code> et <code>universite.sn</code>. Une zone DNS standard se compose d'enregistrements spécifiques :</p>
+<ul>
+    <li><strong>SOA (Start of Authority) :</strong> Déclare les paramètres globaux de la zone (serveur maître, contact de l'administrateur, numéro de série pour la synchronisation, délais de rafraîchissement et d'expiration).</li>
+    <li><strong>NS (Name Server) :</strong> Désigne le ou les serveurs DNS faisant autorité sur le domaine (ici <code>ns1.elhadji.sn.</code>).</li>
+    <li><strong>A (Address) :</strong> Établit la correspondance directe entre un nom d'hôte et une adresse IPv4 (ex: <code>elhadji.sn $\rightarrow$ 192.168.126.110</code>).</li>
+    <li><strong>MX (Mail Exchanger) :</strong> Indique aux serveurs de messagerie distants quelle machine reçoit les e-mails pour ce domaine, assorti d'une priorité numérique (ex: <code>10 mail.elhadji.sn.</code>).</li>
+</ul>
+
+<h2>2.3 Le Mécanisme des Hôtes Virtuels (Virtual Hosting)</h2>
+<p>L'<strong>hébergement mutualisé</strong> repose sur la capacité d'un serveur unique à héberger des dizaines de sites web indépendants sur une seule et même adresse IP physique. Ce mécanisme est appelé <em>Name-based Virtual Hosting</em>.</p>
+<p>Dans <strong>Nginx</strong>, chaque domaine est défini par une directive <code>server { ... }</code> contenant la directive <code>server_name elhadji.sn www.elhadji.sn;</code>. Lorsque Nginx reçoit un paquet HTTP, il analyse l'en-tête <code>Host:</code>, matche le bloc correspondant et applique la directive <code>root</code> associée (chemin racine des fichiers sur le disque dur Linux).</p>
+
+<div class="chapter-break"></div>
+<h2>2.4 L'Exécution Dynamique : Nginx vs PHP-FPM</h2>
+<p>Nginx est un serveur web asynchrone non-bloquant (orienté événements), conçu pour délivrer des contenus statiques (images, CSS, JS) à très haute vitesse. En revanche, Nginx ne sait pas exécuter directement le code PHP de WordPress.</p>
+<p>C'est pourquoi il délègue l'exécution dynamique à <strong>PHP-FPM (FastCGI Process Manager)</strong> :</p>
+<ol>
+    <li>Nginx reçoit la requête demandant <code>index.php</code>.</li>
+    <li>Nginx encapsule la requête au format binaire <strong>FastCGI</strong> et l'envoie à PHP-FPM via une socket Unix locale (<code>/var/run/php/php8.1-fpm.sock</code>).</li>
+    <li>PHP-FPM réveille un processus travailleur (worker process) qui exécute le script PHP avec les identifiants système de l'utilisateur dédié (ex: <code>web1</code> pour <code>elhadji.sn</code>).</li>
+    <li>PHP-FPM renvoie le code HTML compilé à Nginx, qui le transmet au navigateur client.</li>
+</ol>
+
+<div class="theory-box">
+    <div class="theory-title">Sécurité : Le cloisonnement des privilèges sous Linux</div>
+    Grâce à PHP-FPM et à la structure d'ISPConfig, chaque domaine tourne sous un utilisateur Linux dédié (<code>web1</code>, <code>web2</code>). Si une faille de sécurité survient sur WordPress dans le site <code>elhadji.sn</code>, l'attaquant ne peut lire ni modifier les fichiers du site <code>universite.sn</code>, car les permissions du système de fichiers Unix (<code>drwx--x--- web2 client0</code>) l'en empêchent strictement.
+</div>
+
+<h2>2.5 La Persistance (MariaDB) et le Cache d'Objets en RAM (Redis)</h2>
+<p>Une page d'accueil WordPress moderne nécessite en moyenne 30 à 60 requêtes SQL vers le serveur de base de données <strong>MariaDB</strong> (récupération des options, des articles, des menus, des métadonnées d'utilisateurs). Répéter ces requêtes sur disque pour chaque visiteur s'avère coûteux en CPU et en entrées/sorties (I/O).</p>
+
+<p>Pour éliminer ce goulot d'étranglement, nous avons intégré un moteur de cache clé-valeur en mémoire vive : <strong>Redis</strong>.</p>
+<ul>
+    <li><strong>Premier chargement :</strong> WordPress interroge MariaDB, formate les données et stocke le résultat dans Redis (port <code>6379</code>) avec une clé d'identification unique (ex: <code>elhadji.sn_options_alloptions</code>).</li>
+    <li><strong>Chargements suivants :</strong> WordPress récupère les données directement en RAM en moins de 0.5 milliseconde, sans solliciter la base de données relationnelle.</li>
+</ul>
+
+<h2>2.6 L'Architecture de Messagerie Électronique (MTA, MDA, SMTP, IMAP)</h2>
+<p>La messagerie sur Internet repose sur une séparation nette des rôles :</p>
+<table>
+    <thead>
+        <tr>
+            <th>Composant</th>
+            <th>Rôle & Définition</th>
+            <th>Logiciel utilisé</th>
+            <th>Port & Protocole</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>MUA</strong> (Mail User Agent)</td>
+            <td>Interface client pour composer et lire les courriels</td>
+            <td>Webmail Roundcube</td>
+            <td>HTTP/HTTPS (8081)</td>
+        </tr>
+        <tr>
+            <td><strong>MTA</strong> (Mail Transfer Agent)</td>
+            <td>Serveur de transport chargé d'expédier et relayer les courriels d'un serveur à un autre</td>
+            <td>Postfix</td>
+            <td>SMTP (Port 25 / 587)</td>
+        </tr>
+        <tr>
+            <td><strong>MDA</strong> (Mail Delivery Agent)</td>
+            <td>Serveur chargé de stocker les courriels dans les boîtes aux lettres locales (Maildir) et de les délivrer aux clients</td>
+            <td>Dovecot</td>
+            <td>IMAP (Port 143/993) / LMTP</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Le format de stockage retenu est le <strong>Maildir</strong> (un fichier par courriel dans les répertoires <code>/var/vmail/domaine/utilisateur/cur</code>, <code>new</code>, <code>tmp</code>), qui offre une robustesse bien supérieure au format historique <code>mbox</code> contre la corruption de données en cas d'accès concurrents.</p>
+
+<h2>2.7 Théorie des Sauvegardes : RPO, RTO et Rétention</h2>
+<p>La sécurité d'un hébergement repose sur sa politique de continuité d'activité (PCA) et de reprise après sinistre (PRA) :</p>
+<ul>
+    <li><strong>RPO (Recovery Point Objective) :</strong> Quantité maximale de données que l'on accepte de perdre. Avec une sauvegarde quotidienne à 02h00, le RPO est de 24 heures maximum.</li>
+    <li><strong>RTO (Recovery Time Objective) :</strong> Durée nécessaire pour restaurer le service après un incident.</li>
+    <li><strong>Politique de rétention (7 copies) :</strong> L'archivage quotidien conserve les sauvegardes des 7 derniers jours (du jour J à J-7) et purge automatiquement les plus anciennes. Ce mécanisme protège à la fois contre les pannes matérielles et contre les attaques non détectées immédiatement (ex: corruption de base de données constatée 3 jours après).</li>
+</ul>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE III                                                              -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>III. Architecture Système & Conception Réseau</h1>
+
+<h2>3.1 Pourquoi le choix d'ISPConfig 3 ?</h2>
+<p>Dans l'univers des panneaux d'administration Linux open source, **ISPConfig 3** s'impose comme la référence académique et professionnelle pour les raisons suivantes :</p>
+<ul>
+    <li><strong>Transparence totale des configurations :</strong> ISPConfig ne crée pas de boîte noire propriétaire. Il écrit directement dans les fichiers de configuration standards de Linux (fichiers de zone <code>/etc/bind/pri.*</code>, hôtes virtuels <code>/etc/nginx/sites-available/*.vhost</code>, tables Postfix standard).</li>
+    <li><strong>Conformité absolue aux termes du cours :</strong> Les fonctionnalités exigées par l'enseignant (choix explicite du composant BIND, réglage de la fréquence quotidienne/hebdomadaire des sauvegardes et du nombre de copies dans les paramètres du site) sont littéralement les libellés natifs d'ISPConfig.</li>
+    <li><strong>Architecture asynchrone sécurisée :</strong> L'interface web d'ISPConfig n'écrit pas directement sur le système en tant que <code>root</code>. Elle insère des ordres dans une table de suivi (<code>sys_datalog</code>). Un démon système autonome (<code>/usr/local/ispconfig/server/server.sh</code>) dépile ces tâches toutes les minutes pour reconfigurer BIND, Nginx et Postfix de manière contrôlée.</li>
+</ul>
+
+<h2>3.2 Topologie Réseau Hybride (Double Interface : NAT fixe + Bridge)</h2>
+<p>Pour concilier le confort de travail sur l'ordinateur hôte Windows et l'exigence d'interconnexion en salle de classe, une architecture à <strong>deux interfaces réseau distinctes</strong> a été implémentée dans VMware Workstation :</p>
+
+<div class="diagram-container">
++---------------------------------------------------------------------------------------+
+| PC HÔTE WINDOWS                                                                       |
+|  Navigateur Web : Résolution DNS pointant vers 192.168.126.110                         |
+|  Accès direct : https://192.168.126.110:8080 (ISPConfig) / http://elhadji.sn/        |
++---------------------------------------------------------------------------------------+
+        |                                                       |
+        | [Réseau Interne NAT VMnet8]                           | [Pont Physique Réseau / Wi-Fi]
+        | IP fixe permanente                                    | IP dynamique via DHCP local
+        v                                                       v
++---------------------------------------------------------------------------------------+
+| MACHINE VIRTUELLE UBUNTU 22.04 LTS (TP3-Admin-Reseaux-ISPConfig)                      |
+|                                                                                       |
+|  eth0 : 192.168.126.110/24 (NAT)                      eth1 : 192.168.1.10/24 (Bridge) |
+|  -> Liaison permanente avec Windows                   -> Liaison avec le camarade     |
+|                                                                                       |
+|  SERVICES SYSTÈME INTERNES :                                                          |
+|  [ BIND9 : Port 53 ]  [ Nginx : 80/443 ]  [ ISPConfig : 8080 ]  [ Webmail : 8081 ]    |
+|  [ PHP-FPM 8.1 ]      [ MariaDB 10.6 ]    [ Redis : 6379 ]      [ Postfix : 25 ]      |
++---------------------------------------------------------------------------------------+
+                                                                ^
+                                                                | [Liaison SMTP Port 25]
+                                                                v
+                                                +---------------------------------------+
+                                                | VM DU CAMARADE EN SALLE DE CLASSE     |
+                                                | IP: 192.168.1.XX (Domaine camarade)   |
+                                                +---------------------------------------+
+</div>
+
+<p><strong>Avantages de cette conception :</strong></p>
+<ol>
+    <li><strong>Indépendance des réseaux externes :</strong> Lorsque l'étudiant quitte son domicile pour l'université, l'adresse IP de <code>eth0</code> (<code>192.168.126.110</code>) ne bouge pas. Tous les raccourcis Windows, le serveur BIND local et les sites WordPress restent 100 % opérationnels même hors ligne.</li>
+    <li><strong>Capacité d'interconnexion en classe :</strong> L'interface <code>eth1</code> acquiert automatiquement une adresse routable sur le réseau de la salle de cours, permettant aux machines des étudiants d'échanger des flux SMTP (port 25) et DNS (port 53).</li>
+</ol>
+
+<h2>3.3 Provisioning Automatisé via Cloud-Init & Seed ISO</h2>
+<p>Plutôt que de procéder à une installation manuelle fastidieuse via l'installateur graphique, la machine virtuelle a été déployée selon les méthodes industrielles du DevOps :</p>
+<ul>
+    <li><strong>Image Cloud Ubuntu Jammy (22.04 LTS) :</strong> Utilisation d'une image cloud officielle précompilée au format OVA.</li>
+    <li><strong>Cloud-Init :</strong> Définition déclarative de la configuration initiale dans trois fichiers (<code>meta-data</code>, <code>user-data</code>, <code>network-config</code>).</li>
+    <li><strong>Disque de configuration (Seed ISO) :</strong> Compilation d'une image ISO au format <code>cidata</code> via <code>mkisofs</code>, connectée au lecteur CD-ROM virtuel pour initialiser le système (comptes utilisateurs, clés SSH Ed25519, configuration statique de <code>eth0</code>) dès le premier démarrage.</li>
+</ul>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE IV                                                               -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>IV. Mise en Œuvre Pratique & Déploiement Étape par Étape</h1>
+
+<h2>4.1 Déploiement automatique du socle ISPConfig 3 (Stack LEMP)</h2>
+<p>L'installation s'est effectuée de façon non-interactive via le script d'automatisation officiel d'ISPConfig, adapté pour une stack Nginx haute performance sans quotas de fichiers superflus en environnement virtualisé :</p>
+
+<pre><code># Téléchargement et exécution du moteur ISPConfig 3 Autoinstaller
+php -q /tmp/ispconfig-ai/ispconfig.ai.php \
+    --use-nginx \
+    --use-php=system \
+    --channel=stable \
+    --lang=en \
+    --no-quota \
+    --no-mailman \
+    --roundcube \
+    --i-know-what-i-am-doing</code></pre>
+
+<p>Ce processus provisionne automatiquement :</p>
+<ul>
+    <li>Le serveur web <strong>Nginx 1.18</strong> et les modules d'application.</li>
+    <li>Le moteur <strong>PHP-FPM 8.1</strong> configuré avec les extensions nécessaires (Curl, GD, Imagick, Intl, Zip, Mbstring).</li>
+    <li>Le serveur de bases de données <strong>MariaDB 10.6</strong>.</li>
+    <li>Le serveur DNS <strong>BIND9 (version 9.18)</strong>.</li>
+    <li>La suite de messagerie <strong>Postfix + Dovecot + Rspamd</strong>.</li>
+    <li>Le webmail moderne <strong>Roundcube</strong> connecté au socket PHP.</li>
+</ul>
+
+<h2>4.2 Configuration et vérification des zones DNS BIND9</h2>
+<p>Le fichier d'options de BIND9 (<code>/etc/bind/named.conf.options</code>) a été optimisé pour accepter les requêtes du réseau local et relayer les requêtes externes vers les serveurs publics (Forwarders) afin de conserver l'accès Internet sur le client Windows :</p>
+
+<pre><code>options {
+    directory "/var/cache/bind";
+    listen-on { any; };
+    allow-query { any; };
+    allow-recursion { any; };
+    recursion yes;
+    forwarders {
+        192.168.126.2; // Passerelle NAT VMware
+        8.8.8.8;       // Google DNS
+        1.1.1.1;       // Cloudflare DNS
+    };
+    dnssec-validation no; // Indispensable pour la résolution des domaines locaux (.sn)
+};</code></pre>
+
+<p>Les fichiers de zones générés par ISPConfig (ex: <code>/etc/bind/pri.elhadji.sn</code>) contiennent la déclaration rigoureuse des enregistrements :</p>
+
+<pre><code>$TTL        3600
+@       IN      SOA     ns1.elhadji.sn. hostmaster.elhadji.sn. (
+                        2026110201 ; Serial YYYYMMDDNN
+                        7200       ; Refresh (2 heures)
+                        540        ; Retry (9 minutes)
+                        604800     ; Expire (1 semaine)
+                        3600 )     ; Minimum TTL
+;
+elhadji.sn. 3600      A          192.168.126.110
+www         3600      A          192.168.126.110
+mail        3600      A          192.168.126.110
+webmail     3600      A          192.168.126.110
+ns1         3600      A          192.168.126.110
+elhadji.sn. 3600      NS         ns1.elhadji.sn.
+elhadji.sn. 3600      MX     10  mail.elhadji.sn.</code></pre>
+
+<div class="oral-tip-box">
+    <div class="oral-tip-title">Contrôle de conformité DNS en ligne de commande</div>
+    Avant toute démonstration, vérifiez la syntaxe avec les outils officiels de BIND9 :<br>
+    <code>named-checkconf</code> (renvoie vide si la syntaxe globale est parfaite)<br>
+    <code>named-checkzone elhadji.sn /etc/bind/pri.elhadji.sn</code> (doit afficher <strong>OK</strong>).
+</div>
+
+<div class="chapter-break"></div>
+<h2>4.3 Déclaration Multidomaine & Utilisateurs isolés</h2>
+<p>La déclaration des domaines a été injectée via l'<strong>API REST d'ISPConfig</strong> (endpoint <code>/remote/json.php</code>). Ce procédé garantit le respect de toutes les contraintes de base de données (génération des entrées <code>sys_datalog</code>) et crée l'arborescence Linux dédiée :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom de Domaine</th>
+            <th>Propriétaire Linux</th>
+            <th>Groupe</th>
+            <th>Racine des fichiers (DocumentRoot)</th>
+            <th>Base MariaDB</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>elhadji.sn</code></td>
+            <td><code>web1</code></td>
+            <td><code>client0</code></td>
+            <td><code>/var/www/clients/client0/web1/web/</code></td>
+            <td><code>wp_elhadji_sn</code></td>
+        </tr>
+        <tr>
+            <td><code>universite.sn</code></td>
+            <td><code>web2</code></td>
+            <td><code>client0</code></td>
+            <td><code>/var/www/clients/client0/web2/web/</code></td>
+            <td><code>wp_universite_sn</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>4.4 Déploiement optimisé de WordPress avec Redis Object Cache</h2>
+<p>L'outil CLI officiel <strong>WP-CLI</strong> a été exploité pour déployer WordPress sans intervention manuelle :</p>
+<ol>
+    <li>Téléchargement du cœur de WordPress en version française (<code>wp core download --locale=fr_FR</code>).</li>
+    <li>Génération du fichier <code>wp-config.php</code> avec salage et déclaration du socket Redis :
+<pre><code>define( 'WP_REDIS_HOST', '127.0.0.1' );
+define( 'WP_REDIS_PORT', 6379 );
+define( 'WP_CACHE_KEY_SALT', 'elhadji.sn_' );
+define( 'FS_METHOD', 'direct' );</code></pre>
+    </li>
+    <li>Installation automatique du site et création du compte administrateur (<code>admin / Passer@2026</code>).</li>
+    <li>Installation et activation de l'extension <code>redis-cache</code> (<code>wp redis enable</code>).</li>
+    <li>Création d'un article de démonstration attestant de la conformité du TP.</li>
+</ol>
+
+<h2>4.5 Planification des Sauvegardes Quotidiennes (7 copies)</h2>
+<p>Dans ISPConfig, chaque hôte virtuel intègre un module de sauvegarde native stocké dans les métadonnées de la table <code>web_domain</code> :</p>
+<ul>
+    <li><strong>Paramètre <code>backup_interval</code> :</strong> défini sur <code>daily</code>.</li>
+    <li><strong>Paramètre <code>backup_copies</code> :</strong> défini sur <code>7</code>.</li>
+</ul>
+<p>Chaque nuit, le script système <code>/usr/local/ispconfig/server/cron_daily.sh</code> effectue :</p>
+<ol>
+    <li>Un dump SQL complet compressé (gzip) de la base de données du domaine.</li>
+    <li>Une archive TAR compressée des répertoires web (<code>/var/www/elhadji.sn/web</code>) en ignorant les répertoires temporaires.</li>
+    <li>Le stockage des archives dans <code>/var/backup/web1/</code> avec suppression automatique de la sauvegarde la plus ancienne dès que le seuil de 7 copies est dépassé.</li>
+</ol>
+
+<h2>4.6 Messagerie Multidomaine & Script d'Interconnexion en Classe</h2>
+<p>Pour le volet messagerie, les domaines et comptes courriels suivants ont été créés :</p>
+<ul>
+    <li>Sur <code>elhadji.sn</code> : <code>contact@elhadji.sn</code> et <code>etudiant@elhadji.sn</code>.</li>
+    <li>Sur <code>universite.sn</code> : <code>contact@universite.sn</code> et <code>etudiant@universite.sn</code>.</li>
+</ul>
+
+<p>Pour réussir l'épreuve d'interconnexion avec un camarade le jour de l'évaluation, un outil en ligne de commande a été rédigé : <code>/usr/local/bin/connecter-camarade</code> :</p>
+<pre><code># Utilisation en 1 seule ligne de commande le jour du TP :
+/usr/local/bin/connecter-camarade &lt;domaine-du-camarade.sn&gt; &lt;ip-de-sa-vm&gt;</code></pre>
+
+<p><strong>Ce que fait ce script en coulisses :</strong></p>
+<ol>
+    <li>Il configure une <strong>zone de transfert conditionnel (Forward Zone)</strong> dans <code>/etc/bind/named.conf.local</code> pour que notre serveur BIND interroge directement le DNS du camarade sur son domaine.</li>
+    <li>Il ajoute une route de transport explicite dans Postfix (<code>/etc/postfix/transport</code> : <code>domaine-camarade.sn smtp:[IP_CAMARADE]:25</code>) et compile la table avec <code>postmap</code>.</li>
+    <li>Il envoie immédiatement un courriel de validation via <code>swaks</code> depuis <code>contact@elhadji.sn</code> vers la messagerie du camarade.</li>
+    <li>Il affiche en temps réel les dernières lignes de <code>/var/log/mail.log</code> prouvant le code retour <code>250 2.0.0 Ok: queued as...</code>.</li>
+</ol>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE V                                                                -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>V. Guide de Soutenance Orale & Réponses aux Questions de l'Enseignant</h1>
+
+<p>Cette section regroupe les questions typiques posées par les jurys et enseignants lors des évaluations de ce TP, accompagnées de la justification théorique et de la commande de démonstration à exécuter.</p>
+
+<h3>Q1. « Pourquoi activer BIND plutôt que d'utiliser un simple fichier /etc/hosts ? »</h3>
+<p><strong>Réponse théorique :</strong> Le fichier <code>/etc/hosts</code> est une table statique locale non-scalable : il ne gère ni la récursion, ni la hiérarchie des domaines, ni les enregistrements spécifiques comme le <strong>MX (Mail Exchanger)</strong> indispensable au fonctionnement des serveurs de messagerie. BIND9 implémente le véritable protocole DNS standardisé (RFC 1035), écoute sur le port 53 (UDP/TCP) et permet à des machines tierces (comme le client Windows ou le camarade de classe) d'interroger le serveur de manière dynamique.</p>
+<pre><code># Preuve en direct : Vérifier que named écoute sur le port 53
+netstat -tlpn | grep named</code></pre>
+
+<h3>Q2. « Comment Nginx sait-il quel site web afficher si les deux domaines partagent la même IP ? »</h3>
+<p><strong>Réponse théorique :</strong> Grâce au concept de <strong>Name-based Virtual Hosting</strong>. En HTTP, Nginx inspecte le header <code>Host:</code> de la requête HTTP/1.1. En HTTPS, Nginx utilise l'extension TLS <strong>SNI (Server Name Indication)</strong> transmise dans le handshake TLS initial pour présenter le certificat approprié et router le trafic vers le bon bloc <code>server { server_name ...; }</code>.</p>
+<pre><code># Preuve en direct : Afficher les deux VirtualHosts configurés par ISPConfig
+ls -l /etc/nginx/sites-enabled/100-*.vhost</code></pre>
+
+<h3>Q3. « Qu'est-ce que PHP-FPM et pourquoi ne pas exécuter PHP directement dans le serveur web ? »</h3>
+<p><strong>Réponse théorique :</strong> L'intégration de PHP comme module interne (ex: <code>mod_php</code> sous Apache) est obsolète et peu sécurisée, car tous les sites s'exécutent sous le même utilisateur système (<code>www-data</code>). PHP-FPM est un démon indépendant qui gère des pools de processus distincts. Il permet de faire tourner le site A sous l'utilisateur <code>web1</code> et le site B sous l'utilisateur <code>web2</code>, garantissant l'isolation des données et une allocation dynamique des ressources (workers on-demand).</p>
+<pre><code># Preuve en direct : Vérifier le pool PHP-FPM et les utilisateurs associés
+ps aux | grep php-fpm | grep -E 'web1|web2'</code></pre>
+
+<h3>Q4. « Quel est l'intérêt d'un cache Redis par rapport au cache SQL de MariaDB ? »</h3>
+<p><strong>Réponse théorique :</strong> Le cache de requêtes de MariaDB invalide brutalement ses entrées dès qu'une écriture intervient sur une table, et reste dépendant de la structure relationnelle. <strong>Redis</strong> est un serveur clé-valeur NoSQL entièrement résidant en <strong>RAM</strong>. Il stocke des objets PHP sérialisés prêts à l'emploi. Le temps d'accès passe ainsi de quelques dizaines de millisecondes (requête SQL + parsing + jointures) à moins d'une milliseconde.</p>
+<pre><code># Preuve en direct : Vérifier l'état de la connexion Redis sous WordPress
+wp redis status --path=/var/www/elhadji.sn/web --allow-root</code></pre>
+
+<h3>Q5. « Expliquez comment votre serveur a acheminé le mail vers la VM de votre camarade. »</h3>
+<p><strong>Réponse théorique :</strong></p>
+<ol>
+    <li>L'expéditeur poste le mail sur le port de soumission local (MTA Postfix).</li>
+    <li>Postfix consulte sa table de transport (<code>/etc/postfix/transport</code>) ou interroge BIND pour obtenir l'enregistrement <strong>MX</strong> du domaine du camarade.</li>
+    <li>Postfix résout l'adresse IP associée au serveur MX distant.</li>
+    <li>Postfix ouvre une connexion <strong>TCP sur le port 25</strong> vers l'IP du camarade et engage le dialogue SMTP (<code>HELO</code>, <code>MAIL FROM</code>, <code>RCPT TO</code>, <code>DATA</code>). Dès réception du code retour <code>250 Ok: queued</code>, le courriel est considéré comme transmis.</li>
+</ol>
+<pre><code># Preuve en direct : Visualiser l'acquittement SMTP 250 dans les logs Postfix
+tail -n 20 /var/log/mail.log | grep status=sent</code></pre>
+
+<!-- ========================================================================= -->
+<!-- CHAPITRE VI                                                               -->
+<!-- ========================================================================= -->
+<div class="chapter-break"></div>
+<h1>VI. Conclusion & Synthèse des Compétences Acquises</h1>
+
+<p>Ce travail pratique a permis de réaliser l'intégration complète d'une infrastructure d'hébergement moderne en partant d'un système Linux minimal pour aboutir à une plateforme prête à la production sous <strong>ISPConfig 3</strong>.</p>
+
+<div class="theory-box">
+    <div class="theory-title">Tableau Récapitulatif des Métriques de l'Infrastructure</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Composant</th>
+                <th>Logiciel & Version</th>
+                <th>Point de Contrôle / Emplacement</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Panneau de Gestion</strong></td>
+                <td>ISPConfig 3.2.11</td>
+                <td><code>https://192.168.126.110:8080</code></td>
+                <td>Opérationnel</td>
+            </tr>
+            <tr>
+                <td><strong>Serveur DNS</strong></td>
+                <td>BIND 9.18 (named)</td>
+                <td><code>/etc/bind/pri.elhadji.sn</code> & <code>pri.universite.sn</code></td>
+                <td>Actif (Port 53)</td>
+            </tr>
+            <tr>
+                <td><strong>Serveur Web</strong></td>
+                <td>Nginx 1.18 (LEMP)</td>
+                <td><code>/etc/nginx/sites-available/*.vhost</code></td>
+                <td>Actif (Port 80/443)</td>
+            </tr>
+            <tr>
+                <td><strong>Serveur PHP</strong></td>
+                <td>PHP-FPM 8.1</td>
+                <td><code>/var/run/php/php8.1-fpm.sock</code></td>
+                <td>Actif</td>
+            </tr>
+            <tr>
+                <td><strong>Base de Données</strong></td>
+                <td>MariaDB 10.6</td>
+                <td>Bases <code>wp_elhadji_sn</code> & <code>wp_universite_sn</code></td>
+                <td>Actif (Port 3306)</td>
+            </tr>
+            <tr>
+                <td><strong>Cache d'Objets</strong></td>
+                <td>Redis Server 6.0</td>
+                <td><code>127.0.0.1:6379</code> (Plugin WP actif)</td>
+                <td>Connecté (RAM)</td>
+            </tr>
+            <tr>
+                <td><strong>MTA / SMTP</strong></td>
+                <td>Postfix 3.6</td>
+                <td><code>/etc/postfix/main.cf</code> & <code>transport</code></td>
+                <td>Actif (Port 25)</td>
+            </tr>
+            <tr>
+                <td><strong>MDA / IMAP</strong></td>
+                <td>Dovecot 2.3</td>
+                <td><code>/var/vmail/elhadji.sn/</code> (Format Maildir)</td>
+                <td>Actif (Port 143/993)</td>
+            </tr>
+            <tr>
+                <td><strong>Webmail</strong></td>
+                <td>Roundcube 1.5</td>
+                <td><code>https://192.168.126.110:8081/webmail/</code></td>
+                <td>Opérationnel</td>
+            </tr>
+            <tr>
+                <td><strong>Sauvegardes</strong></td>
+                <td>Cron ISPConfig</td>
+                <td>Quotidienne (7 copies conservées)</td>
+                <td>Automatisé</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p>Au-delà de la réussite technique des tests automatisés, ce projet confère une maîtrise approfondie des interactions entre les services réseau fondamentaux (DNS, HTTP, SMTP) et des exigences de cloisonnement et de performance indispensables à tout administrateur système ou ingénieur DevOps.</p>
+
+</body>
+</html>
